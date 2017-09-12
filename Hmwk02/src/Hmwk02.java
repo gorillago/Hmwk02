@@ -1,4 +1,7 @@
+import java.awt.*;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.attribute.FileAttribute;
@@ -7,9 +10,9 @@ import java.util.Scanner;
 public class Hmwk02 {
     public static void main(String[] args) {
         int[] ranges = {26, 52, 62, 67, 72};
-        //int length = getLength();
-        double[][] array = {{0, 1, 2, 3, 4}, {1, 11, 12, 13, 14}, {2, 21, 22, 23, 34}, {3, 31, 32, 33, 34}, {4, 41, 42, 43, 44}};
-        System.out.println(buildHTML(array));
+        int length = getLength();
+
+        HTMLTable(buildHTML(buildTableArray(ranges, length)));
     }
     private static double log(double number, double base) {
         double result = Math.log(number)/Math.log(base);
@@ -62,7 +65,7 @@ public class Hmwk02 {
         int result = Integer.parseInt(input);
         return result;
     }
-    private static void showHTMLTable(String html) {
+    private static void HTMLTable(String html) {
         File file = new File("results.html");
 
         if (!file.exists()) {
@@ -80,6 +83,8 @@ public class Hmwk02 {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        openBrowser(file);
     }
     private static String buildHTML(double[][] table) {
         StringBuilder builder = new StringBuilder();
@@ -96,7 +101,7 @@ public class Hmwk02 {
         builder = builder.append("  <body>\n");
         builder = builder.append("    <table>\n");
         builder = builder.append("      <tr>\n");
-        builder = builder.append("        <th>Length \\ Entropy</th>\n");
+        builder = builder.append("        <th>Length \\ Range</th>\n");
 
         for (int i = 1; i < table.length; i++) {
             double column = table[i][0];
@@ -108,7 +113,7 @@ public class Hmwk02 {
 
         builder = builder.append("      </tr>\n");
 
-        for (int y = 1; y < table.length; y++) {
+        for (int y = 1; y < table[0].length; y++) {
             double row = table[0][y];
 
             builder = builder.append("      <tr>\n");
@@ -116,7 +121,7 @@ public class Hmwk02 {
             builder = builder.append(row);
             builder = builder.append("</th>\n");
 
-            for (int x = 1; x < table[x-1].length; x++) {
+            for (int x = 1; x < table.length; x++) {
                 double data = table[x][y];
 
                 builder = builder.append("        <td>");
@@ -132,7 +137,24 @@ public class Hmwk02 {
         String result = builder.toString();
         return result;
     }
-//    private static double[][] buildTableArray(int[] ranges, int length) {
-//
-//    }
+    private static double[][] buildTableArray(int[] ranges, int length) {
+        double[][]result = new double[ranges.length+1][length+1];
+        for (int i = 1; i <= length; i++) {
+            result[0][i] = i;
+            for (int j = 1; j <= ranges.length; j++) {
+                result[j][0] = ranges[j-1];
+                double entropy = calculateMaximumEntropy(ranges[j-1], i);
+                double roundedEntropy = Math.round(entropy*10)/10.0;
+                result[j][i] = roundedEntropy;
+            }
+        }
+        return result;
+    }
+    private static void openBrowser(File file) {
+        try {
+            Desktop.getDesktop().browse(new URI("file:///"+file.getAbsolutePath().replace("\\", "/")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
